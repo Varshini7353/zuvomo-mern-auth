@@ -1,0 +1,65 @@
+import React from 'react';
+import { Formik, Field, Form } from 'formik';
+import * as Yup from 'yup';
+import { api, setAuthToken } from '../api';
+
+const SignupSchema = Yup.object().shape({
+  fullName: Yup.string().required('Required'),
+  email: Yup.string().email('Invalid').required('Required'),
+  password: Yup.string().min(6, 'Too short').required('Required'),
+  phone: Yup.string().required('Required'),
+  terms: Yup.boolean().oneOf([true], 'Accept T&C')
+});
+
+export default function Signup() {
+  return (
+    <div>
+      <h3>Signup</h3>
+      <Formik
+        initialValues={{ fullName: '', email: '', password: '', phone: '', country: '', state: '', city: '', dob: '', interests: [], terms: false }}
+        validationSchema={SignupSchema}
+        onSubmit={async (values, { setSubmitting, setStatus }) => {
+          try {
+            const res = await api.post('/auth/signup', values);
+            setAuthToken(res.data.token);
+            setStatus({ success: 'Signup successful' });
+          } catch (err) {
+            setStatus({ error: err.response?.data?.msg || 'Error' });
+          } finally {
+            setSubmitting(false);
+          }
+        }}
+      >
+        {({ isSubmitting, status, errors, touched }) => (
+          <Form>
+            <div><label>Full Name</label><Field name="fullName" /></div>
+            <div><label>Email</label><Field name="email" /></div>
+            <div><label>Password</label><Field type="password" name="password" /></div>
+            <div><label>Phone</label><Field name="phone" /></div>
+            <div><label>Country</label><Field name="country" /></div>
+            <div><label>State</label><Field name="state" /></div>
+            <div><label>City</label><Field name="city" /></div>
+            <div><label>Date of Birth</label><Field type="date" name="dob" /></div>
+            <div><label>Interests (comma separated)</label><Field name="interests" /></div>
+            <div>
+              <label>
+                <Field type="checkbox" name="terms" /> I accept Terms & Conditions
+              </label>
+            </div>
+
+            <button type="submit" disabled={isSubmitting || Object.keys(errors).length > 0}>Signup</button>
+
+            <div style={{ marginTop: 10 }}>
+              <a href={${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/auth/google}>Sign up with Google</a>
+              <br />
+              <a href={${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/auth/linkedin}>Sign up with LinkedIn</a>
+            </div>
+
+            {status?.error && <div style={{ color: 'red' }}>{status.error}</div>}
+            {status?.success && <div style={{ color: 'green' }}>{status.success}</div>}
+          </Form>
+        )}
+      </Formik>
+    </div>
+  );
+}

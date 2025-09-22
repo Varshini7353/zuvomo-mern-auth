@@ -1,0 +1,43 @@
+import React, { useEffect } from 'react';
+import { Routes, Route, useNavigate } from 'react-router-dom';
+import Signup from './pages/Signup';
+import Login from './pages/Login';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
+import ChangePassword from './pages/ChangePassword';
+import ProtectedRoute from './components/ProtectedRoute';
+import { setAuthToken } from './api';
+
+function App() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // social-success route will have token in query params
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+    if (token) {
+      setAuthToken(token);
+      navigate('/'); // or dashboard
+    } else {
+      const saved = localStorage.getItem('token');
+      if (saved) setAuthToken(saved);
+    }
+  }, [navigate]);
+
+  return (
+    <div style={{ maxWidth: 800, margin: '0 auto', padding: 20 }}>
+      <h2>MERN Auth Boilerplate</h2>
+      <Routes>
+        <Route path="/" element={<div>Home - <a href="/signup">Signup</a> | <a href="/login">Login</a></div>} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/forgot" element={<ForgotPassword />} />
+        <Route path="/reset" element={<ResetPassword />} />
+        <Route path="/change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
+        <Route path="*" element={<div>Not found</div>} />
+      </Routes>
+    </div>
+  );
+}
+
+export default App;

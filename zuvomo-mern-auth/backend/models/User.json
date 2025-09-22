@@ -1,0 +1,25 @@
+const mongoose = require('mongoose');
+
+const OTPSchema = new mongoose.Schema({
+  code: String,
+  expiresAt: Date
+}, { _id: false });
+
+const UserSchema = new mongoose.Schema({
+  fullName: { type: String, required: true },
+  email: { type: String, lowercase: true, index: true },
+  phone: String,
+  password: String, // hashed
+  profileImage: String,
+  country: String,
+  state: String,
+  city: String,
+  dob: Date,
+  interests: [String],
+  googleId: String,
+  linkedinId: String,
+  otp: OTPSchema,
+  createdAt: { type: Date, default: Date.now }
+});
+
+module.exports = mongoose.model('User', UserSchema);
